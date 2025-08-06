@@ -14,7 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      affiliate_clicks: {
+        Row: {
+          clicked_at: string
+          id: string
+          referrer: string | null
+          route_id: string
+          user_agent: string | null
+          user_ip: unknown | null
+        }
+        Insert: {
+          clicked_at?: string
+          id?: string
+          referrer?: string | null
+          route_id: string
+          user_agent?: string | null
+          user_ip?: unknown | null
+        }
+        Update: {
+          clicked_at?: string
+          id?: string
+          referrer?: string | null
+          route_id?: string
+          user_agent?: string | null
+          user_ip?: unknown | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_clicks_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "transfer_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      currencies: {
+        Row: {
+          code: string
+          created_at: string
+          flag_url: string | null
+          id: string
+          is_active: boolean
+          name: string
+          symbol: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          flag_url?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          symbol?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          flag_url?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          symbol?: string | null
+        }
+        Relationships: []
+      }
+      psps: {
+        Row: {
+          affiliate_template: string | null
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          name: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          affiliate_template?: string | null
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          affiliate_template?: string | null
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          name?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      transfer_routes: {
+        Row: {
+          confidence_level: number | null
+          created_at: string
+          currency_id: string
+          estimated_fee_percentage: number | null
+          estimated_time_hours: number | null
+          from_psp_id: string
+          id: string
+          is_supported: boolean
+          kyc_required: boolean | null
+          notes: string | null
+          to_psp_id: string
+          updated_at: string
+        }
+        Insert: {
+          confidence_level?: number | null
+          created_at?: string
+          currency_id: string
+          estimated_fee_percentage?: number | null
+          estimated_time_hours?: number | null
+          from_psp_id: string
+          id?: string
+          is_supported?: boolean
+          kyc_required?: boolean | null
+          notes?: string | null
+          to_psp_id: string
+          updated_at?: string
+        }
+        Update: {
+          confidence_level?: number | null
+          created_at?: string
+          currency_id?: string
+          estimated_fee_percentage?: number | null
+          estimated_time_hours?: number | null
+          from_psp_id?: string
+          id?: string
+          is_supported?: boolean
+          kyc_required?: boolean | null
+          notes?: string | null
+          to_psp_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transfer_routes_currency_id_fkey"
+            columns: ["currency_id"]
+            isOneToOne: false
+            referencedRelation: "currencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_routes_from_psp_id_fkey"
+            columns: ["from_psp_id"]
+            isOneToOne: false
+            referencedRelation: "psps"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transfer_routes_to_psp_id_fkey"
+            columns: ["to_psp_id"]
+            isOneToOne: false
+            referencedRelation: "psps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
