@@ -1,1 +1,53 @@
 project_id = "faghzdmlkbvvfkoopvqm"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1:54321"
+
+[inbucket]
+enabled = false
+
+[storage]
+enabled = false
+
+[auth]
+enabled = true
+additional_redirect_urls = ["https://1238e34d-3cdc-4bf4-ab79-7a7c9f8ea6b8.lovableproject.com"]
+external_email_enabled = true
+external_phone_enabled = false
+
+[auth.email]
+enable_signup = true
+double_confirm_signup = true
+enable_confirmations = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+template = "Your code is {{ .Code }} ."
+
+[functions.get-transfer-insights]
+verify_jwt = false

@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 const Index = () => {
   const [searchResult, setSearchResult] = useState<TransferResultType | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const { searchRoute, psps, currencies } = useTransferData();
+  const { searchRoute, getAIInsights, psps, currencies } = useTransferData();
   const { toast } = useToast();
 
   const generateAffiliateUrl = (templateUrl: string, pspName: string): string => {
@@ -19,12 +19,34 @@ const Index = () => {
   const handleSearch = async (query: TransferQuery) => {
     setIsSearching(true);
     try {
-      const route = await searchRoute(query.fromPsp, query.toPsp, query.currency);
+      const fromPsp = psps.find(p => p.id === query.fromPsp);
+      const toPsp = psps.find(p => p.id === query.toPsp);
+      const currency = currencies.find(c => c.id === query.currency);
+
+      // Get both database route and AI insights in parallel
+      const [route, aiInsights] = await Promise.all([
+        searchRoute(query.fromPsp, query.toPsp, query.currency),
+        getAIInsights(fromPsp?.display_name || '', toPsp?.display_name || '', currency?.code || '')
+      ]);
+
+      console.log('Database route:', route);
+      console.log('AI insights:', aiInsights);
+
+      // Combine database data with AI insights
+      let finalResult;
       
       if (route) {
+        // Use database data as base, enhance with AI insights
+        const enhancedConfidence = aiInsights ? 
+          Math.round((route.confidence_level! + aiInsights.confidence) / 2) : 
+          route.confidence_level;
+
+        const enhancedFee = aiInsights?.estimatedFee || route.estimated_fee_percentage;
+        const enhancedTime = aiInsights?.estimatedTime || route.estimated_time_hours;
+
         const status = route.is_supported 
           ? 'yes' 
-          : route.confidence_level && route.confidence_level > 30 
+          : enhancedConfidence && enhancedConfidence > 30 
             ? 'maybe' 
             : 'no';
             
@@ -34,40 +56,78 @@ const Index = () => {
             ? 'hsl(var(--destructive))' 
             : 'hsl(var(--warning))';
 
-        // Only show affiliate links for Revolut for now (others are broken)
         const affiliateUrl = route.is_supported && route.to_psp?.affiliate_template && route.to_psp.name.toLowerCase().includes('revolut')
           ? generateAffiliateUrl(route.to_psp.affiliate_template, route.to_psp.name)
           : undefined;
 
-        setSearchResult({
+        const enhancedNotes = aiInsights ? 
+          `${route.notes || ''}\n\nAI Analysis: ${aiInsights.notes}`.trim() : 
+          route.notes;
+
+        finalResult = {
           ...route,
           status,
           statusColor,
+          confidence_level: enhancedConfidence,
+          estimated_fee_percentage: enhancedFee,
+          estimated_time_hours: enhancedTime,
+          notes: enhancedNotes,
           affiliateUrl
-        });
+        };
+      } else if (aiInsights) {
+        // No database route, use AI insights only
+        const status = aiInsights.isSupported 
+          ? 'yes' 
+          : aiInsights.confidence > 30 
+            ? 'maybe' 
+            : 'no';
+            
+        const statusColor = status === 'yes' 
+          ? 'hsl(var(--success))' 
+          : status === 'no' 
+            ? 'hsl(var(--destructive))' 
+            : 'hsl(var(--warning))';
+
+        finalResult = {
+          id: '',
+          from_psp_id: query.fromPsp,
+          to_psp_id: query.toPsp,
+          currency_id: query.currency,
+          is_supported: aiInsights.isSupported,
+          status,
+          statusColor,
+          confidence_level: aiInsights.confidence,
+          estimated_fee_percentage: aiInsights.estimatedFee,
+          estimated_time_hours: aiInsights.estimatedTime,
+          notes: `AI-Powered Analysis: ${aiInsights.notes}\n\nSource: ${aiInsights.sourceInfo}`,
+          from_psp: fromPsp,
+          to_psp: toPsp,
+          currency: currency,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
       } else {
-        // No route found in database - return "maybe" result
-        const fromPsp = psps.find(p => p.id === query.fromPsp);
-        const toPsp = psps.find(p => p.id === query.toPsp);
-        const currency = currencies.find(c => c.id === query.currency);
-        
-        setSearchResult({
+        // Fallback - no route and no AI insights
+        finalResult = {
           id: '',
           from_psp_id: query.fromPsp,
           to_psp_id: query.toPsp,
           currency_id: query.currency,
           is_supported: false,
-          status: 'maybe',
+          status: 'maybe' as const,
           statusColor: 'hsl(var(--warning))',
-          confidence_level: 50,
+          confidence_level: 40,
           notes: 'Limited information available. This route may be possible through intermediary services.',
           from_psp: fromPsp,
           to_psp: toPsp,
           currency: currency,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        });
+        };
       }
+
+      setSearchResult(finalResult);
+      
     } catch (error) {
       console.error('Search error:', error);
       toast({

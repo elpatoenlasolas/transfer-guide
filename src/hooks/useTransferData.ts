@@ -32,6 +32,7 @@ export const useTransferData = () => {
   });
 
   const searchRoute = async (fromPspId: string, toPspId: string, currencyId: string) => {
+    // First, check existing database
     const { data, error } = await supabase
       .from('transfer_routes')
       .select(`
@@ -47,6 +48,24 @@ export const useTransferData = () => {
 
     if (error && error.code !== 'PGRST116') throw error;
     return data as TransferRoute | null;
+  };
+
+  const getAIInsights = async (fromPsp: string, toPsp: string, currency: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('get-transfer-insights', {
+        body: { fromPsp, toPsp, currency }
+      });
+
+      if (error) {
+        console.error('AI insights error:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Failed to get AI insights:', error);
+      return null;
+    }
   };
 
   const trackAffiliateClick = async (routeId: string) => {
@@ -67,6 +86,7 @@ export const useTransferData = () => {
     currencies: currencies || [],
     isLoading: pspsLoading || currenciesLoading,
     searchRoute,
+    getAIInsights,
     trackAffiliateClick
   };
 };
