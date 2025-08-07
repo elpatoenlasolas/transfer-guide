@@ -99,7 +99,7 @@ const Index = () => {
           confidence_level: aiInsights.confidence,
           estimated_fee_percentage: aiInsights.estimatedFee,
           estimated_time_hours: aiInsights.estimatedTime,
-          notes: `AI-Powered Analysis: ${aiInsights.notes}\n\nSource: ${aiInsights.sourceInfo}`,
+          notes: `Google Gemini Powered Analysis: ${aiInsights.notes}\n\nSource: ${aiInsights.sourceInfo}`,
           from_psp: fromPsp,
           to_psp: toPsp,
           currency: currency,
