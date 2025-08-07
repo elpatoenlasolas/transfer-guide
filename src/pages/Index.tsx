@@ -34,7 +34,8 @@ const Index = () => {
             ? 'hsl(var(--destructive))' 
             : 'hsl(var(--warning))';
 
-        const affiliateUrl = route.is_supported && route.to_psp?.affiliate_template
+        // Only show affiliate links for Revolut for now (others are broken)
+        const affiliateUrl = route.is_supported && route.to_psp?.affiliate_template && route.to_psp.name.toLowerCase().includes('revolut')
           ? generateAffiliateUrl(route.to_psp.affiliate_template, route.to_psp.name)
           : undefined;
 

@@ -159,7 +159,7 @@ export const TransferResult = ({ result, onNewSearch }: TransferResultProps) => 
         {result.status === 'yes' && result.affiliateUrl && (
           <Button onClick={handleAffiliateClick} className="flex-1">
             <ExternalLink className="mr-2 h-4 w-4" />
-            Send via {result.to_psp?.display_name}
+            Get Started with {result.to_psp?.display_name}
           </Button>
         )}
       </div>

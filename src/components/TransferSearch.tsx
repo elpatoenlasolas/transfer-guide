@@ -61,7 +61,7 @@ export const TransferSearch = ({ onSearch, isLoading }: TransferSearchProps) => 
           </div>
 
           <div className="hidden md:flex justify-center items-center">
-            <ArrowRight className="h-6 w-6 text-muted-foreground" />
+            <div className="text-2xl text-primary animate-pulse">💸</div>
           </div>
 
           <div className="space-y-2">
